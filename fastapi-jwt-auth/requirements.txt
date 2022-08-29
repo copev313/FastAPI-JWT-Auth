@@ -1,0 +1,9 @@
+bcrypt==4.0.0
+cryptography==37.0.*
+deta==1.1.0
+fastapi==0.81.*
+passlib==1.7.*
+pydantic[email]
+pyjwt==2.4.0
+python-dotenv==0.20.0
+uvicorn
