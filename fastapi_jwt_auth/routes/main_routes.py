@@ -1,5 +1,5 @@
 """
-    For defining genral / main routes for the app.
+    For defining general routes for the API.
 """
 from fastapi import APIRouter, Security
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -18,7 +18,7 @@ auth_handler = Auth()
 
 
 @main_router.get("/secret-stuff")
-async def secret_data(
+def secret_data(
     credentials: HTTPAuthorizationCredentials = Security(security)) -> MessageModel:
     """ An example of a protected endpoint. """
     token = credentials.credentials
@@ -28,5 +28,5 @@ async def secret_data(
 
 
 @main_router.get("/notsecret-stuff")
-async def not_secret_data() -> MessageModel:
+def not_secret_data() -> MessageModel:
     return {"message": "Not secret data..."}

@@ -5,29 +5,31 @@ from fastapi import HTTPException
 from passlib.context import CryptContext
 from datetime import datetime as dt, timedelta
 
-class Auth:
 
+class Auth:
     # Load environment variables from .env file:
     load_dotenv()
 
+    JWT_ALGORITHM = "HS256"
+
     # Initialize hasher and secret key:
     hasher = CryptContext(schemes=["bcrypt"])
-    secret_key = os.getenv("SECRET_KEY")
+    SECRET_KEY = os.getenv("SECRET_KEY")
 
 
-    def encode_password(self, pswd) -> str:
+    def encode_password(self, pswd: str) -> str:
         """Hashes a password and returns the encoded string. """
         return self.hasher.hash(pswd)
 
 
-    def verify_password(self, pswd, hashed_pswd) -> bool:
+    def verify_password(self, pswd: str, hashed_pswd: str) -> bool:
         """Verifies that the password provided matches the hashed password. """
         return self.hasher.verify(pswd, hashed_pswd)
 
 
     def encode_token(self,
                      user_id: str,
-                     expiry_mins: int = 30) -> str:
+                     expiry_mins: int = 20) -> str:
         """Encodes a payload with the username and expiration datetime, 
         returning the JWT.
 
@@ -36,7 +38,7 @@ class Auth:
         user_id: str
             The user's identifier (email) to use as a subject in the payload.
 
-        expiry_mins: int, optional (default=30)
+        expiry_mins: int, optional (default=20)
             The number of minutes from now the token will expire.
 
         scope: str, optional (default="access_token")
@@ -54,15 +56,17 @@ class Auth:
         }
         return jwt.encode(
             payload=payload,
-            key=self.secret_key,
-            algorithm="HS256"
+            key=self.SECRET_KEY,
+            algorithm=self.JWT_ALGORITHM
         )
 
 
-    def decode_token(self, token: str):
+    def decode_token(self, token: str) -> str:
         """Decodes a JWT and returns the token's subject (user's email). """
         try:
-            payload = jwt.decode(token, self.secret_key, algorithms=["HS256"])
+            payload = jwt.decode(
+                token, self.SECRET_KEY, algorithms=[self.JWT_ALGORITHM]
+            )
             # [CASE] Token scope is 'access_token', return username:
             if payload["scope"] == "access_token":
                 return payload["sub"]
@@ -95,7 +99,7 @@ class Auth:
 
     def encode_refresh_token(self,
                              user_id: str,
-                             expiry_hrs: int = 8) -> str:
+                             expiry_hrs: int = 4) -> str:
         """Encodes a refresh token with the username and expiration datetime, 
         returning a refreshed JWT.
         
@@ -104,7 +108,7 @@ class Auth:
         user_id: str
             The user identifer (email) to use as a subject in the payload.
         
-        expiry_hrs: int, optional (default=8)
+        expiry_hrs: int, optional (default=4)
             The number of hours from now the refresh token will expire.
         """
         payload = {
@@ -119,6 +123,6 @@ class Auth:
         }
         return jwt.encode(
             payload=payload,
-            key=self.secret_key,
-            algorithm="HS256"
+            key=self.SECRET_KEY,
+            algorithm=self.JWT_ALGORITHM
         )
